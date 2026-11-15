@@ -1,19 +1,16 @@
 """
 Módulo de Modelos de Aprendizado de Máquina.
 
-Implementa os modelos descritos na Seção III-C de Materiais e Métodos.
-Nesta primeira etapa, implementamos o modelo de referência (Baseline):
-- Regressão Logística (Logistic Regression)
-
-A Regressão Logística é o modelo inicial ideal devido à sua interpretabilidade,
-baixo custo computacional e facilidade em analisar o peso e a direção (positivo/negativo)
-do impacto de cada característica biológica sobre a probabilidade de risco de extinção.
+Implementa os modelos descritos na Seção III-C de Materiais e Métodos:
+1. Regressão Logística (Baseline linear interpretável)
+2. Random Forest (Ensemble não-linear baseado em árvores)
 """
 
 from typing import Optional, List, Dict, Any
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
 
 from src.config import RANDOM_STATE
@@ -66,6 +63,66 @@ def get_logistic_regression_pipeline(
         solver=solver,
         max_iter=max_iter,
         random_state=random_state,
+    )
+
+    pipeline = Pipeline([
+        ("preprocessor", preprocessor),
+        ("classifier", classifier)
+    ])
+
+    return pipeline
+
+
+def get_random_forest_pipeline(
+    n_estimators: int = 100,
+    class_weight: Optional[str] = "balanced_subsample",
+    max_depth: Optional[int] = None,
+    min_samples_split: int = 2,
+    min_samples_leaf: int = 1,
+    random_state: int = RANDOM_STATE,
+    n_jobs: int = 1,
+    scale_features: bool = False,
+    imputation_strategy: str = "median",
+) -> Pipeline:
+    """
+    Cria um Pipeline Scikit-Learn completo combinando:
+    1. Imputação de nulos pela mediana (ajustada estritamente no treino).
+    2. (Opcional) Padronização StandardScaler (padrão False para árvores).
+    3. Estimador Random Forest com ponderação de classes.
+
+    Conforme Seção III-C do artigo:
+    'A Random Forest combina árvores de decisão e permite representar relações
+    não lineares entre as características biológicas, oferecendo uma abordagem
+    complementar para a tarefa de classificação [11, 12].'
+
+    Parâmetros:
+        n_estimators (int): Número de árvores na floresta (padrão 100).
+        class_weight (str, opcional): 'balanced_subsample' ou 'balanced' para lidar
+            com o desbalanceamento das classes (~23% ameaçadas em aves, ~34% em mamíferos).
+        max_depth (int, opcional): Profundidade máxima das árvores.
+        min_samples_split (int): Mínimo de amostras para dividir um nó interno.
+        min_samples_leaf (int): Mínimo de amostras em um nó folha.
+        random_state (int): Semente para garantia de reprodutibilidade (padrão RANDOM_STATE).
+        n_jobs (int): Número de processadores (padrão 1 para estabilidade no Windows).
+        scale_features (bool): Se True, inclui padronização z-score (padrão False).
+        imputation_strategy (str): Estratégia para o SimpleImputer ('median').
+
+    Retorna:
+        Pipeline: Estimador pronto para treino e validação cruzada.
+    """
+    preprocessor = build_preprocessing_pipeline(
+        imputation_strategy=imputation_strategy,
+        scale_features=scale_features
+    )
+
+    classifier = RandomForestClassifier(
+        n_estimators=n_estimators,
+        class_weight=class_weight,
+        max_depth=max_depth,
+        min_samples_split=min_samples_split,
+        min_samples_leaf=min_samples_leaf,
+        random_state=random_state,
+        n_jobs=n_jobs,
     )
 
     pipeline = Pipeline([

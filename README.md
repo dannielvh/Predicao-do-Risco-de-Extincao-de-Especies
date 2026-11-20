@@ -22,7 +22,7 @@ Predicao-do-Risco-de-Extincao-de-Especies/
 │   ├── config.py              # Parâmetros globais, sementes e nomes de atributos
 │   ├── data_loader.py         # Leitura e remoção de identificadores taxonômicos
 │   ├── preprocessor.py        # Pipeline de imputação e padronização (sem vazamento de dados)
-│   ├── models.py              # Definição dos modelos de Machine Learning (Baseline)
+│   ├── models.py              # Modelos de ML: Regressão Logística (Baseline) e Random Forest
 │   ├── metrics.py             # Funções de cálculo de métricas e matriz de confusão
 │   └── exploratory.py         # Análise exploratória e exportação de tabelas LaTeX
 ├── scripts/                   # Scripts executáveis do pipeline
@@ -46,6 +46,10 @@ Predicao-do-Risco-de-Extincao-de-Especies/
 4. **Modelo de Referência (Baseline - Regressão Logística):**
    - Treinamento com ponderação de classes (`class_weight='balanced'`) para compensar o desbalanceamento natural da base.
    - Avaliação via validação cruzada 5-fold no treino (80%) e generalização no conjunto de teste independente (20%).
+   - Extração de coeficientes e Razão de Chances (*Odds Ratio*).
+5. **Modelo Ensemble Não-Linear (Random Forest):**
+   - Pipeline estruturado com imputação pela mediana e estimador com ponderação dinâmica por subamostra (`class_weight='balanced_subsample'`).
+   - Módulo de extração de importância de características biológicas via critério de impureza MDI (*Mean Decrease in Impurity* / Gini).
 
 ---
 
@@ -81,7 +85,8 @@ python scripts/02_baseline_logistic_regression.py
 ---
 
 ## 📌 Próximos Passos
-- [ ] Implementação do modelo **Random Forest** (relações não lineares).
+- [x] Implementação do modelo **Random Forest** (pipeline e extração de importância de atributos).
+- [ ] Execução dos experimentos comparativos do Random Forest (5-fold CV e teste em 20%).
 - [ ] Busca e avaliação de subconjuntos de variáveis ($k = 1, \dots, n$).
 - [ ] Geração de gráficos de saturação de desempenho e importância de atributos.
 - [ ] Redação das seções de Resultados, Discussão e Conclusão no `Artigo.tex`.

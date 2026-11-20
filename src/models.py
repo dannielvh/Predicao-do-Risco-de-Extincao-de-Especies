@@ -166,3 +166,33 @@ def extract_logistic_regression_coefficients(
     })
 
     return df_coef.sort_values(by="Magnitude Absoluta", ascending=False).reset_index(drop=True)
+
+
+def extract_random_forest_feature_importances(
+    pipeline: Pipeline,
+    feature_names: List[str]
+) -> pd.DataFrame:
+    """
+    Extrai e organiza a importância das características aprendida pelo Random Forest
+    com base no critério de impureza MDI (Mean Decrease in Impurity / Gini).
+
+    Valores mais altos indicam maior contribuição da característica para a redução
+    da incerteza e correta partição das espécies ameaçadas nas árvores de decisão.
+
+    Parâmetros:
+        pipeline (Pipeline): Pipeline já treinado contendo o estimador 'classifier'.
+        feature_names (List[str]): Nomes dos atributos na mesma ordem de entrada.
+
+    Retorna:
+        pd.DataFrame: Tabela ordenada decrescentemente pela importância de cada variável.
+    """
+    classifier: RandomForestClassifier = pipeline.named_steps["classifier"]
+    importances = classifier.feature_importances_
+
+    df_imp = pd.DataFrame({
+        "Atributo": feature_names,
+        "Importância": importances,
+        "Importância (%)": importances * 100.0
+    })
+
+    return df_imp.sort_values(by="Importância", ascending=False).reset_index(drop=True)

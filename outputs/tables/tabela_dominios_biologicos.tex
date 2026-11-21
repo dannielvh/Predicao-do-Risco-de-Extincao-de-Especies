@@ -1,0 +1,25 @@
+\begin{table}[htbp]
+\centering
+\caption{Desempenho Preditivo por Dimensão Ecológica Funcional (Random Forest na Validação Cruzada).}
+\label{tab:dominios_biologicos}
+\begin{tabular}{llccc}
+\hline
+\textbf{Grupo} & \textbf{Dimensão Biológica} & \textbf{Nº Variáveis (k)} & \textbf{F1-Score Médio (\%)} & \textbf{ROC-AUC Médio} \\
+\hline
+Aves & Apenas História de Vida & 3 & 42.51 & 0.6575 \\
+Aves & Apenas Nicho Ecológico & 4 & 40.54 & 0.6363 \\
+Aves & Apenas Exposição Espacial & 3 & 54.91 & 0.8059 \\
+Aves & História de Vida + Espacial & 6 & 59.67 & 0.854 \\
+Aves & Nicho Ecológico + Espacial & 7 & 58.99 & 0.841 \\
+Aves & História de Vida + Nicho & 7 & 39.74 & 0.6969 \\
+Aves & Conjunto Completo (Todos os Domínios) & 10 & 59.84 & 0.8656 \\
+Mamíferos & Apenas História de Vida & 3 & 51.78 & 0.7107 \\
+Mamíferos & Apenas Nicho Ecológico & 4 & 51.55 & 0.6471 \\
+Mamíferos & Apenas Exposição Espacial & 3 & 65.24 & 0.8193 \\
+Mamíferos & História de Vida + Espacial & 6 & 69.88 & 0.8658 \\
+Mamíferos & Nicho Ecológico + Espacial & 7 & 69.32 & 0.8584 \\
+Mamíferos & História de Vida + Nicho & 7 & 54.94 & 0.7617 \\
+Mamíferos & Conjunto Completo (Todos os Domínios) & 10 & 71.2 & 0.8805 \\
+\hline
+\end{tabular}
+\end{table}

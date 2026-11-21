@@ -1,0 +1,9 @@
+Grupo,Modelo,Acurácia,Precisão,Recall,F1-Score,ROC-AUC
+Aves,Regressão Logística (Todas - k=10),74.68%,47.26%,72.18%,57.12%,0.8335
+Aves,Regressão Logística (Ótimo - k=10),74.68%,47.26%,72.18%,57.12%,0.8335
+Aves,Random Forest (Todas - k=10),84.75%,76.10%,50.63%,60.80%,0.8635
+Aves,Random Forest (Ótimo - k=10),84.41%,74.31%,50.84%,60.37%,0.8635
+Mamíferos,Regressão Logística (Todas - k=10),79.47%,68.38%,74.85%,71.47%,0.8738
+Mamíferos,Regressão Logística (Ótimo - k=10),79.47%,68.38%,74.85%,71.47%,0.8738
+Mamíferos,Random Forest (Todas - k=10),82.83%,79.65%,67.16%,72.87%,0.8926
+Mamíferos,Random Forest (Ótimo - k=10),82.93%,78.15%,69.82%,73.75%,0.8929

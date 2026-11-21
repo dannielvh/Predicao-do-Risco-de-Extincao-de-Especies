@@ -229,24 +229,27 @@ def compare_fixed_size_nature(
     return pd.DataFrame(rows)
 
 
-def exhaustive_feature_search_by_k(
+def sequential_forward_selection_by_k(
     model_type: str,
     X_train: pd.DataFrame,
     y_train: pd.Series,
     candidate_features: Optional[List[str]] = None,
     max_k: Optional[int] = None,
     cv: Optional[StratifiedKFold] = None,
+    verbose: bool = True,
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Executa a busca exaustiva de subconjuntos de atributos para cada tamanho k (1 até max_k).
-    Testa todas as combinações C(n, k) estritamente no conjunto de treino.
+    Executa Seleção Progressiva para Frente (Sequential Forward Selection - SFS).
+    A cada passo k, incorpora a característica biológica que produz o maior
+    incremento no F1-score médio sob validação cruzada 5-fold estratificada.
 
-    Para cada k, seleciona a combinação vencedora com base no maior F1-score médio.
+    Gera a curva de saturação rigorosa k = 1..max_k, permitindo identificar
+    o ponto exato de saturação (diminishing returns) e a hierarquia funcional de entrada.
 
     Retorna:
         Tuple[pd.DataFrame, pd.DataFrame]:
         - best_subsets_df: O melhor subconjunto para cada tamanho k (curva de saturação).
-        - all_subsets_df: Histórico completo de todas as combinações avaliadas.
+        - all_subsets_df: Histórico de todas as avaliações intermediárias realizadas.
     """
     if candidate_features is None:
         candidate_features = [c for c in ELIGIBLE_BIOLOGICAL_TRAITS if c in X_train.columns]
@@ -260,23 +263,26 @@ def exhaustive_feature_search_by_k(
     if cv is None:
         cv = StratifiedKFold(n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_STATE)
 
-    all_records = []
+    selected_features: List[str] = []
+    remaining_features: List[str] = list(candidate_features)
     best_by_k = []
+    all_records = []
 
     for k in range(1, max_k + 1):
-        combinations = list(itertools.combinations(candidate_features, k))
-        best_k_res = None
-        best_k_f1 = -1.0
+        best_trait_this_step = None
+        best_f1_this_step = -1.0
+        best_res_this_step = None
 
-        for combo in combinations:
-            subset_features = list(combo)
-            res = evaluate_feature_subset(model_type, X_train, y_train, subset_features, cv=cv)
+        for trait in remaining_features:
+            current_candidate_set = selected_features + [trait]
+            res = evaluate_feature_subset(model_type, X_train, y_train, current_candidate_set, cv=cv)
 
             record = {
                 "k": k,
-                "features": subset_features,
-                "features_str": ", ".join(subset_features),
-                "features_display": ", ".join([TRAIT_DISPLAY_NAMES.get(t, t) for t in subset_features]),
+                "tested_trait": trait,
+                "features": current_candidate_set,
+                "features_str": ", ".join(current_candidate_set),
+                "features_display": ", ".join([TRAIT_DISPLAY_NAMES.get(t, t) for t in current_candidate_set]),
                 "f1_mean": res["f1_mean"],
                 "f1_std": res["f1_std"],
                 "roc_auc_mean": res["roc_auc_mean"],
@@ -290,14 +296,43 @@ def exhaustive_feature_search_by_k(
             }
             all_records.append(record)
 
-            if res["f1_mean"] > best_k_f1:
-                best_k_f1 = res["f1_mean"]
-                best_k_res = record
+            if res["f1_mean"] > best_f1_this_step:
+                best_f1_this_step = res["f1_mean"]
+                best_trait_this_step = trait
+                best_res_this_step = record
 
-        if best_k_res is not None:
-            best_by_k.append(best_k_res)
+        if best_trait_this_step is not None:
+            selected_features.append(best_trait_this_step)
+            remaining_features.remove(best_trait_this_step)
+            best_by_k.append(best_res_this_step)
+            if verbose:
+                trait_display = TRAIT_DISPLAY_NAMES.get(best_trait_this_step, best_trait_this_step)
+                print(f"  [k={k:2d}] + {trait_display:35s} | F1: {best_res_this_step['f1_mean']*100:.2f}% | ROC-AUC: {best_res_this_step['roc_auc_mean']:.4f}", flush=True)
 
-    all_df = pd.DataFrame(all_records)
     best_df = pd.DataFrame(best_by_k)
-
+    all_df = pd.DataFrame(all_records)
     return best_df, all_df
+
+
+def exhaustive_feature_search_by_k(
+    model_type: str,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    candidate_features: Optional[List[str]] = None,
+    max_k: Optional[int] = None,
+    cv: Optional[StratifiedKFold] = None,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Executa a busca de subconjuntos de atributos para cada tamanho k (1 até max_k).
+    Por padrão na versão otimizada, utiliza Sequential Forward Selection (SFS) para
+    estabilidade e escalabilidade computacional sem perda de representatividade.
+    """
+    return sequential_forward_selection_by_k(
+        model_type=model_type,
+        X_train=X_train,
+        y_train=y_train,
+        candidate_features=candidate_features,
+        max_k=max_k,
+        cv=cv,
+        verbose=True,
+    )

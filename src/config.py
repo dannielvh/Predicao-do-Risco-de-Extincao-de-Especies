@@ -81,3 +81,68 @@ TRAIT_DISPLAY_NAMES = {
     "GEOGRAPHICAL_RANGE_SIZE": "Área de Distribuição Geográfica",
 }
 
+# Atributos biológicos elegíveis para análise comparativa padronizada
+# (desconsidera OFFSPRING_SIZE devido a 99.4% de dados ausentes em aves)
+ELIGIBLE_BIOLOGICAL_TRAITS = [
+    "BODY_SIZE",
+    "FECUNDITY",
+    "GENERATION_LENGTH",
+    "DIET_BREADTH",
+    "TROPHIC_LEVEL",
+    "DISPERSAL_ABILITY",
+    "MICROHABITAT",
+    "HABITAT_BREADTH",
+    "ALTITUDINAL_RANGE",
+    "GEOGRAPHICAL_RANGE_SIZE",
+]
+
+# ==============================================================================
+# DIMENSÕES ECOLÓGICAS FUNCIONAIS (Mapeamento Temático Biológico)
+# ==============================================================================
+# Fundamentado na literatura de macroecologia e risco de extinção (Chichorro et al. 2022;
+# Purvis et al. 2000; Cardillo et al. 2005).
+# Permite ao experimento diferenciar com rigor científico:
+#   1. O efeito do NÚMERO de características (k = 1..10)
+#   2. O efeito da NATUREZA BIOLÓGICA (História de Vida vs. Nicho vs. Espacial)
+FUNCTIONAL_TRAIT_DOMAINS = {
+    "life_history": [
+        "BODY_SIZE",
+        "FECUNDITY",
+        "GENERATION_LENGTH",
+    ],
+    "ecological_niche": [
+        "DIET_BREADTH",
+        "TROPHIC_LEVEL",
+        "MICROHABITAT",
+        "HABITAT_BREADTH",
+    ],
+    "spatial_exposure": [
+        "GEOGRAPHICAL_RANGE_SIZE",
+        "ALTITUDINAL_RANGE",
+        "DISPERSAL_ABILITY",
+    ],
+}
+
+DOMAIN_DISPLAY_NAMES = {
+    "life_history": "História de Vida (Ritmo de Vida)",
+    "ecological_niche": "Nicho Ecológico e Especialização",
+    "spatial_exposure": "Exposição Espacial e Dispersão",
+}
+
+DOMAIN_DESCRIPTIONS = {
+    "life_history": "Massa corporal, fecundidade e tempo de geração — indicam a velocidade do ciclo biológico (estratégia lenta vs. rápida).",
+    "ecological_niche": "Amplitude de dieta, nível trófico, micro-habitat e amplitude de habitat — indicam especialização e sensibilidade a alterações no ecossistema.",
+    "spatial_exposure": "Área geográfica, amplitude altitudinal e dispersão — indicam vulnerabilidade territorial e capacidade de fuga frente a pressões antrópicas.",
+}
+
+
+def get_trait_domain(trait_name: str) -> str:
+    """
+    Retorna o nome da dimensão ecológica à qual o atributo pertence.
+    """
+    for domain, traits in FUNCTIONAL_TRAIT_DOMAINS.items():
+        if trait_name in traits:
+            return domain
+    return "outros"
+
+

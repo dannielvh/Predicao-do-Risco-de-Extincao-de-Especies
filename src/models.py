@@ -23,22 +23,20 @@ def get_logistic_regression_pipeline(
     max_iter: int = 1000,
     solver: str = "lbfgs",
     random_state: int = RANDOM_STATE,
+    apply_log_transform: bool = True,
     scale_features: bool = True,
     imputation_strategy: str = "median",
 ) -> Pipeline:
     """
     Cria um Pipeline Scikit-Learn completo combinando:
     1. Imputação de nulos pela mediana (ajustada estritamente no treino).
-    2. Padronização StandardScaler (média 0, var 1 - indispensável para convergência da Regressão Logística).
-    3. Estimador de Regressão Logística com ponderação de classes.
+    2. Transformação logarítmica log(x+1) para controle de assimetria de distribuição.
+    3. Padronização StandardScaler (média 0, var 1 - indispensável para convergência linear).
+    4. Estimador de Regressão Logística com ponderação de classes.
 
-    Conforme Seção III-C do artigo:
+    Conforme Seção III-C do artigo e controle de distribuições entre grupos:
     'A Regressão Logística será utilizada como modelo de referência devido
     à sua simplicidade e interpretabilidade.'
-    
-    E Seção III-B:
-    'A distribuição das classes também será examinada [...] para determinar
-    a necessidade de estratégias de ponderação durante o treinamento.'
 
     Parâmetros:
         class_weight (str, opcional): 'balanced' para lidar com o desbalanceamento das classes.
@@ -46,6 +44,7 @@ def get_logistic_regression_pipeline(
         max_iter (int): Número máximo de iterações para convergência.
         solver (str): Algoritmo de otimização ('lbfgs' ou 'liblinear').
         random_state (int): Semente para garantia de reprodutibilidade.
+        apply_log_transform (bool): Se True, aplica log1p em variáveis assimétricas.
         scale_features (bool): Se True, inclui padronização z-score.
         imputation_strategy (str): Estratégia para o SimpleImputer ('median').
 
@@ -54,6 +53,7 @@ def get_logistic_regression_pipeline(
     """
     preprocessor = build_preprocessing_pipeline(
         imputation_strategy=imputation_strategy,
+        apply_log_transform=apply_log_transform,
         scale_features=scale_features
     )
 
@@ -81,14 +81,16 @@ def get_random_forest_pipeline(
     min_samples_leaf: int = 1,
     random_state: int = RANDOM_STATE,
     n_jobs: int = 1,
+    apply_log_transform: bool = False,
     scale_features: bool = False,
     imputation_strategy: str = "median",
 ) -> Pipeline:
     """
     Cria um Pipeline Scikit-Learn completo combinando:
     1. Imputação de nulos pela mediana (ajustada estritamente no treino).
-    2. (Opcional) Padronização StandardScaler (padrão False para árvores).
-    3. Estimador Random Forest com ponderação de classes.
+    2. (Opcional) Transformação logarítmica (padrão False, já que árvores são invariantes a transformações monotônicas).
+    3. (Opcional) Padronização StandardScaler (padrão False para árvores).
+    4. Estimador Random Forest com ponderação de classes.
 
     Conforme Seção III-C do artigo:
     'A Random Forest combina árvores de decisão e permite representar relações
@@ -104,6 +106,7 @@ def get_random_forest_pipeline(
         min_samples_leaf (int): Mínimo de amostras em um nó folha.
         random_state (int): Semente para garantia de reprodutibilidade (padrão RANDOM_STATE).
         n_jobs (int): Número de processadores (padrão 1 para estabilidade no Windows).
+        apply_log_transform (bool): Se True, aplica log1p (padrão False para árvores).
         scale_features (bool): Se True, inclui padronização z-score (padrão False).
         imputation_strategy (str): Estratégia para o SimpleImputer ('median').
 
@@ -112,6 +115,7 @@ def get_random_forest_pipeline(
     """
     preprocessor = build_preprocessing_pipeline(
         imputation_strategy=imputation_strategy,
+        apply_log_transform=apply_log_transform,
         scale_features=scale_features
     )
 

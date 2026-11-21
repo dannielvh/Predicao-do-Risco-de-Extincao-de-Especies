@@ -56,6 +56,16 @@ ALL_BIOLOGICAL_TRAITS = [
     "GEOGRAPHICAL_RANGE_SIZE",
 ]
 
+# Atributos com distribuição de cauda pesada e assimetria acentuada (ordens de magnitude)
+# que exigem transformação logarítmica para controlar diferenças de escala biológica
+SKEWED_BIOLOGICAL_TRAITS = [
+    "BODY_SIZE",
+    "GEOGRAPHICAL_RANGE_SIZE",
+    "GENERATION_LENGTH",
+    "DISPERSAL_ABILITY",
+    "FECUNDITY",
+]
+
 # Nomes descritivos em português para apresentação e tabelas do artigo
 TRAIT_DISPLAY_NAMES = {
     "BODY_SIZE": "Tamanho Corporal",
